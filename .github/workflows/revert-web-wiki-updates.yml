@@ -10,6 +10,7 @@ jobs:
         with:
           repository: ${{github.repository_owner}}/test-oppia.wiki
           token: ${{secrets.WIKI_ACCESS_TOKEN}}
+          fetch-depth: 0
       - name: Add remote
         run: git remote add source https://github.com/${{github.repository_owner}}/test-oppia-docs.git
       - name: Fetch remote
