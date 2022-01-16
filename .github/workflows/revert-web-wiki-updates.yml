@@ -1,0 +1,25 @@
+name: Revert Wiki Changes Made Through the Web Interface
+on:
+  gollum
+
+jobs:
+  revert:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          repository: '${{github.repository_owner}}/test-oppia-docs'
+          token: ${{secrets.WIKI_ACCESS_TOKEN}}
+      - name: Add remote
+        run: git remote add deployment https://github.com/${{github.repository_owner}}/test-oppia.wiki.git
+      - name: Fetch remote
+        run: git fetch deployment
+      - name: Revert commits
+        run: |
+          git config user.name ${{github.actor}}
+          git config user.email ${{github.actor}}@noreply.github.com
+          git revert origin/develop..deployment/master
+      - name: Push to deployment repository
+        run: git push deployment develop:master
+      - name: Push to source repository
+        run: git push
