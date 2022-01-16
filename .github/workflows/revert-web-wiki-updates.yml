@@ -8,18 +8,17 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          repository: '${{github.repository_owner}}/test-oppia-docs'
           token: ${{secrets.WIKI_ACCESS_TOKEN}}
       - name: Add remote
-        run: git remote add deployment https://github.com/${{github.repository_owner}}/test-oppia.wiki.git
+        run: git remote add source https://github.com/${{github.repository_owner}}/test-oppia-docs.git
       - name: Fetch remote
-        run: git fetch deployment
+        run: git fetch source
       - name: Revert commits
         run: |
           git config user.name ${{github.actor}}
           git config user.email ${{github.actor}}@noreply.github.com
-          git revert origin/develop..deployment/master
+          git revert --no-edit source/develop..origin/master
       - name: Push to deployment repository
-        run: git push deployment develop:master
+        run: git push source master:develop
       - name: Push to source repository
         run: git push
