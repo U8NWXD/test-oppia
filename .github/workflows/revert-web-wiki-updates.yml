@@ -8,6 +8,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
+          repository: ${{github.repository_owner}}/test-oppia.wiki
           token: ${{secrets.WIKI_ACCESS_TOKEN}}
       - name: Add remote
         run: git remote add source https://github.com/${{github.repository_owner}}/test-oppia-docs.git
