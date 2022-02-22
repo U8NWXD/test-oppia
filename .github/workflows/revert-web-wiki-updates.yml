@@ -8,12 +8,19 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          repository: ${{github.repository_owner}}/test-oppia-docs
-          token: ${{secrets.GITHUB_TOKEN}}
+          repository: ${{github.repository_owner}}/test-oppia.wiki
+          token: ${{secrets.WIKI_ACCESS_TOKEN}}
           fetch-depth: 0
-      - name: Add deployment repository as a remote
-        run: git remote add deployment https://github.com/${{github.repository_owner}}/test-oppia.wiki.git
+      - name: Add remote
+        run: git remote add source https://github.com/${{github.repository_owner}}/test-oppia-docs.git
       - name: Fetch remote
-        run: git fetch deployment
-      - name: Redeploy source
-        run: git push -f deployment develop:master
+        run: git fetch source
+      - name: Revert commits
+        run: |
+          git config user.name ${{github.actor}}
+          git config user.email ${{github.actor}}@users.noreply.github.com
+          git revert --no-edit source/develop..origin/master
+      - name: Push to deployment repository
+        run: git push source master:develop
+      - name: Push to source repository
+        run: git push
