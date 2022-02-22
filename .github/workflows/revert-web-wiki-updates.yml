@@ -6,10 +6,16 @@ jobs:
   revert:
     runs-on: ubuntu-18.04
     steps:
+      - name: Retrieve authentication token
+        id: get-token
+        uses: getsentry/action-github-app-token@v1
+        with:
+          app_id: ${{ secrets.APP_ID }}
+          private_key: ${{ secrets.APP_PRIVATE_KEY }}
       - uses: actions/checkout@v2
         with:
           repository: ${{github.repository_owner}}/test-oppia.wiki
-          token: ${{secrets.WIKI_ACCESS_TOKEN}}
+          token: ${{ steps.get-token.outputs.token }}
           fetch-depth: 0
       - name: Add remote
         run: git remote add source https://github.com/${{github.repository_owner}}/test-oppia-docs.git
@@ -17,8 +23,8 @@ jobs:
         run: git fetch source
       - name: Revert commits
         run: |
-          git config user.name ${{github.actor}}
-          git config user.email ${{github.actor}}@users.noreply.github.com
+          git config user.name test-wiki-revert[bot]
+          git config user.email 97997431+test-wiki-revert[bot]@users.noreply.github.com
           git revert --no-edit source/develop..origin/master
       - name: Push to deployment repository
         run: git push source master:develop
