@@ -25,14 +25,14 @@ jobs:
         id: check-diff
         run: echo "::set-output name=diff::$(git log source/develop..origin/master)"
       - name: Revert commits
-        if: ${{ steps.check-diff.outputs.diff != "" }}
+        if: ${{ steps.check-diff.outputs.diff != '' }}
         run: |
           git config user.name test-wiki-revert[bot]
           git config user.email 97997431+test-wiki-revert[bot]@users.noreply.github.com
           git revert --no-edit source/develop..origin/master
       - name: Push to deployment repository
-        if: ${{ steps.check-diff.outputs.diff != "" }}
+        if: ${{ steps.check-diff.outputs.diff != '' }}
         run: git push source master:develop
       - name: Push to source repository
-        if: ${{ steps.check-diff.outputs.diff != "" }}
+        if: ${{ steps.check-diff.outputs.diff != '' }}
         run: git push
