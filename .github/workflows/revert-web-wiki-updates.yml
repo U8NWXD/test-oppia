@@ -8,7 +8,7 @@ jobs:
     steps:
       - name: Retrieve authentication token
         id: get-token
-        uses: U8NWXD/get-github-app-token
+        uses: U8NWXD/get-github-app-token@main
         with:
           app_id: ${{ secrets.APP_ID }}
           private_key: ${{ secrets.APP_PRIVATE_KEY }}
