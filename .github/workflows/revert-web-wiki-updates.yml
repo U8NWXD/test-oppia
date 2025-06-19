@@ -1,18 +1,23 @@
 name: Revert Wiki Changes Made Through the Web Interface
 on:
-  gollum
-
+  gollum:
+  workflow_dispatch:
+permissions: read-all
 jobs:
   revert:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
     steps:
       - name: Retrieve authentication token
         id: get-token
-        uses: U8NWXD/get-github-app-token@main
+        # SHA1 hash of the release-v0.0.1 commit.
+        uses: oppia/get-github-app-token@8c3b19db0cdcd0f7fded7dd71e5e0429bf72df1a
         with:
           app_id: ${{ secrets.APP_ID }}
           private_key: ${{ secrets.APP_PRIVATE_KEY }}
-      - uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v3
         with:
           repository: ${{github.repository_owner}}/test-oppia.wiki
           token: ${{ steps.get-token.outputs.token }}
@@ -23,16 +28,20 @@ jobs:
         run: git fetch source
       - name: Check for differences
         id: check-diff
-        run: echo "::set-output name=diff::$(git log source/develop..origin/master)"
-      - name: Revert commits
+        run: |
+          delimiter="$(openssl rand -hex 8)"
+          echo "diff<<$delimiter" >> "$GITHUB_OUTPUT"
+          echo $(git log source/develop..origin/master) >> "$GITHUB_OUTPUT"
+          echo "$delimiter" >> "$GITHUB_OUTPUT"
+      - name: Force-push from source
         if: ${{ steps.check-diff.outputs.diff != '' }}
         run: |
-          git config user.name test-wiki-revert[bot]
-          git config user.email 97997431+test-wiki-revert[bot]@users.noreply.github.com
-          git revert --no-edit source/develop..origin/master
-      - name: Push to deployment repository
-        if: ${{ steps.check-diff.outputs.diff != '' }}
-        run: git push source master:develop
-      - name: Push to source repository
-        if: ${{ steps.check-diff.outputs.diff != '' }}
-        run: git push
+          # Update our copy of the source repo in case changes have been merged
+          # to it while this workflow was running.
+          git fetch source
+          # Checkout source.
+          git checkout develop
+          # Force-push source commits to deployment repo, over-writing the
+          # changes made via the web interface and bringing the repos back in
+          # sync.
+          git push -f origin develop:master
